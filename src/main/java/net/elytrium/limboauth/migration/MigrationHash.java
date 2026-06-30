@@ -18,13 +18,12 @@
 package net.elytrium.limboauth.migration;
 
 import com.google.common.hash.Hashing;
-import de.mkammerer.argon2.Argon2;
-import de.mkammerer.argon2.Argon2Factory;
+import com.password4j.Password;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Hex;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+
 
 @SuppressWarnings("unused")
 public enum MigrationHash {
@@ -106,16 +105,13 @@ public enum MigrationHash {
 
   private static class Argon2Verifier implements MigrationHashVerifier {
 
-    @MonotonicNonNull
-    private Argon2 argon2;
-
     @Override
     public boolean checkPassword(String hash, String password) {
-      if (this.argon2 == null) {
-        this.argon2 = Argon2Factory.create();
+      try {
+        return Password.check(password, hash).withArgon2();
+      } catch (Exception e) {
+        return false;
       }
-
-      return this.argon2.verify(hash, password.getBytes(StandardCharsets.UTF_8));
     }
   }
 }

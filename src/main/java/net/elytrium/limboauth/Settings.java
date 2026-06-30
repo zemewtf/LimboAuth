@@ -71,7 +71,7 @@ public class Settings extends YamlConfig {
     @Comment("Available overlays: PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12, NOTCHED_20")
     public BossBar.Overlay BOSSBAR_OVERLAY = BossBar.Overlay.NOTCHED_20;
     public int MIN_PASSWORD_LENGTH = 4;
-    @Comment("Max password length for the BCrypt hashing algorithm, which is used in this plugin, can't be higher than 71. You can set a lower value than 71.")
+    @Comment("Max password length. Prevents denial of service attacks with extremely long passwords.")
     public int MAX_PASSWORD_LENGTH = 71;
     public boolean CHECK_PASSWORD_STRENGTH = true;
     public String UNSAFE_PASSWORDS_FILE = "unsafe_passwords.txt";
@@ -149,7 +149,15 @@ public class Settings extends YamlConfig {
     @Comment("QR Generator URL, set {data} placeholder")
     public String QR_GENERATOR_URL = "https://api.qrserver.com/v1/create-qr-code/?data={data}&size=200x200&ecc=M&margin=30";
     public String TOTP_ISSUER = "LimboAuth by Elytrium";
-    public int BCRYPT_COST = 10;
+    @Comment({
+        "Argon2id hashing configuration.",
+        "Memory is in KiB. 16384 KiB is 16 MiB. Higher values are safer but use more RAM and CPU.",
+        "Iterations is the number of passes over the memory. Higher is slower/safer.",
+        "Parallelism is the number of threads used. Must be >= 1."
+    })
+    public int ARGON2_MEMORY = 16384;
+    public int ARGON2_ITERATIONS = 3;
+    public int ARGON2_PARALLELISM = 2;
     public int LOGIN_ATTEMPTS = 3;
     public int IP_LIMIT_REGISTRATIONS = 3;
     public int TOTP_RECOVERY_CODES_AMOUNT = 16;

@@ -17,14 +17,13 @@
 
 package net.elytrium.limboauth.model;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.velocitypowered.api.proxy.Player;
 import java.net.InetSocketAddress;
 import java.util.Locale;
 import java.util.UUID;
-import net.elytrium.limboauth.Settings;
+import net.elytrium.limboauth.PasswordHasher;
 
 @DatabaseTable(tableName = "AUTH")
 public class RegisteredPlayer {
@@ -41,7 +40,7 @@ public class RegisteredPlayer {
   public static final String PREMIUM_UUID_FIELD = "PREMIUMUUID";
   public static final String TOKEN_ISSUED_AT_FIELD = "ISSUEDTIME";
 
-  private static final BCrypt.Hasher HASHER = BCrypt.withDefaults();
+
 
   @DatabaseField(canBeNull = false, columnName = NICKNAME_FIELD)
   private String nickname;
@@ -112,7 +111,7 @@ public class RegisteredPlayer {
   }
 
   public static String genHash(String password) {
-    return HASHER.hashToString(Settings.IMP.MAIN.BCRYPT_COST, password.toCharArray());
+    return PasswordHasher.hash(password);
   }
 
   public RegisteredPlayer setNickname(String nickname) {

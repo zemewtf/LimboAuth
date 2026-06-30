@@ -55,17 +55,17 @@ dependencies {
 
     compileOnly("org.geysermc.floodgate:api:$floodgateVersion")
 
-    implementation("at.favre.lib:bcrypt:0.9.0")
+    implementation("com.password4j:password4j:1.8.4")
     implementation("dev.samstevens.totp:totp:1.7.1")
 
     implementation("com.j256.ormlite:ormlite-jdbc:6.1")
-    implementation("de.mkammerer:argon2-jvm-nolibs:2.11")
 
     implementation("io.whitfin:siphash:2.0.0")
 
     implementation("org.bstats:bstats-velocity:$bstatsVersion")
 
     compileOnly("com.github.spotbugs:spotbugs-annotations:$spotbugsVersion")
+
 }
 
 shadowJar {
@@ -105,12 +105,8 @@ shadowJar {
 
     minimize()
 
-    relocate("at.favre.lib", "net.elytrium.limboauth.thirdparty.at.favre.lib")
+    relocate("com.password4j", "net.elytrium.limboauth.thirdparty.com.password4j")
     relocate("com.j256.ormlite", "net.elytrium.limboauth.thirdparty.com.j256.ormlite")
-    relocate("com.sun.jna", "net.elytrium.limboauth.thirdparty.com.sun.jna") {
-        exclude("com.sun.jna.Native") // For compatibility with native methods.
-    }
-    relocate("de.mkammerer.argon2", "net.elytrium.limboauth.thirdparty.de.mkammerer.argon2")
     relocate("dev.samstevens.totp", "net.elytrium.limboauth.thirdparty.dev.samstevens.totp")
     relocate("org.apache.commons.codec", "net.elytrium.limboauth.thirdparty.org.apache.commons.codec")
     relocate("org.bstats", "net.elytrium.limboauth.thirdparty.org.bstats")

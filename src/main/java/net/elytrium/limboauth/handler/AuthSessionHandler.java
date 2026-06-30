@@ -17,7 +17,6 @@
 
 package net.elytrium.limboauth.handler;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.google.common.primitives.Longs;
 import com.j256.ormlite.dao.Dao;
 import com.velocitypowered.api.proxy.Player;
@@ -42,6 +41,7 @@ import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboSessionHandler;
 import net.elytrium.limboapi.api.player.LimboPlayer;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.PasswordHasher;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.event.PostAuthorizationEvent;
 import net.elytrium.limboauth.event.PostRegisterEvent;
@@ -57,8 +57,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class AuthSessionHandler implements LimboSessionHandler {
 
   public static final CodeVerifier TOTP_CODE_VERIFIER = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
-  private static final BCrypt.Verifyer HASH_VERIFIER = BCrypt.verifyer();
-  private static final BCrypt.Hasher HASHER = BCrypt.withDefaults();
+
 
   private static Component ratelimited;
   private static BossBar.Color bossbarColor;
@@ -528,20 +527,22 @@ public class AuthSessionHandler implements LimboSessionHandler {
 
   public static boolean checkPassword(String password, RegisteredPlayer player, Dao<RegisteredPlayer, String> playerDao) {
     String hash = player.getHash();
-    boolean isCorrect = HASH_VERIFIER.verify(
-        password.getBytes(StandardCharsets.UTF_8),
-        hash.replace("BCRYPT$", "$2a$").getBytes(StandardCharsets.UTF_8)
-    ).verified;
+    boolean isCorrect = PasswordHasher.verify(password, hash);
+    boolean needsRehash = isCorrect && !hash.startsWith("$argon2id$");
 
     if (!isCorrect && migrationHash != null) {
       isCorrect = migrationHash.checkPassword(hash, password);
       if (isCorrect) {
-        player.setPassword(password);
-        try {
-          playerDao.update(player);
-        } catch (SQLException e) {
-          throw new SQLRuntimeException(e);
-        }
+        needsRehash = true;
+      }
+    }
+
+    if (isCorrect && needsRehash) {
+      player.setPassword(password);
+      try {
+        playerDao.update(player);
+      } catch (SQLException e) {
+        throw new SQLRuntimeException(e);
       }
     }
 
@@ -575,7 +576,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
    */
   @Deprecated()
   public static String genHash(String password) {
-    return HASHER.hashToString(Settings.IMP.MAIN.BCRYPT_COST, password.toCharArray());
+    return PasswordHasher.hash(password);
   }
 
 
